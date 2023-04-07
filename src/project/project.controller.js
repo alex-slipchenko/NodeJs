@@ -1,33 +1,39 @@
-// const { response } = require("express")
+const bcrypt = require('bcrypt');
 
-// class userController {
-//     getOneUser = async (request, response) => {
-//         const { id } = request.params;
-//         const user = await userModel.find(id);
-//         // const user = { name: 'alex' }
+const projectModel = require('./project.model');
 
-//         response.send(user);
-//     }
-//     createUser = async (request, response) => {
-//         const body = request.body;
-//         const user = await userModel.createUser(body);
-//         // const user = { name: 'alex' }
-//         response.send(user);
-//     }
-//     deleteUser = async (request, response) => {
-//         const { id } = request.params;
-//         // const user = await userModel.findIdUser(id);
-//         const user = { name: 'alex' }
-//         response.send(user);
-//     }
-//     updateUser = async (request, response) => {
-//         const body = request.body;
-//         const { id } = request.params;
-//         const user = await userModel.findIdUseAndUpdate(id, body);
-//         // const user = { name: 'alex' }
-//         response.send(user);
-//     }
+const jwt = require('jsonwebtoken');
 
-// }
+const secretKey = 'mysecretkey';
 
-// module.exports = new userController();
+class projectController {
+    getLogin = async (request, response) => {
+        // const myRequest = JSON.parse(request.body);
+
+        const { username, pasword } = request.body;
+        console.log(request.body);
+        const user = await projectModel.getInfo();
+
+        if (username === user.name) {
+
+            const saltRounds = 10;
+            const hash = bcrypt.hashSync(user.pasword, saltRounds);
+            const paswordRezult = bcrypt.compareSync(pasword, hash);
+
+            const token = jwt.sign(user, secretKey, { expiresIn: 60 * 60 });
+
+            paswordRezult ? response.status(200).json({
+                token: `Bearer ${token}`
+            }) :
+                response.status(401).json({
+                    message: 'Паролі не сходяться,спробуйте знову'
+                });
+        } else {
+            response.status(404).json({
+                message: 'такого имени нету'
+            })
+        }
+    }
+}
+
+module.exports = new projectController();
