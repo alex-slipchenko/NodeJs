@@ -8,14 +8,10 @@ const secretKey = 'mysecretkey';
 
 class projectController {
     getLogin = async (request, response) => {
-        // const myRequest = JSON.parse(request.body);
-
         const { username, pasword } = request.body;
-        console.log(request.body);
         const user = await projectModel.getInfo();
 
         if (username === user.name) {
-
             const saltRounds = 10;
             const hash = bcrypt.hashSync(user.pasword, saltRounds);
             const paswordRezult = bcrypt.compareSync(pasword, hash);
@@ -26,11 +22,11 @@ class projectController {
                 token: `Bearer ${token}`
             }) :
                 response.status(401).json({
-                    message: 'Паролі не сходяться,спробуйте знову'
+                    message: 'Passwords do not match, try again'
                 });
         } else {
             response.status(404).json({
-                message: 'такого имени нету'
+                message: 'there is no name'
             })
         }
     }
